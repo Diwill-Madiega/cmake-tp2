@@ -26,6 +26,25 @@ void Enemy::follow(const sf::Vector2f& targetPosition, float deltaTime)
     }
 }
 
+void Enemy::update(float deltaTime)
+{
+    animationTime += deltaTime;
+    if (animationTime >= timePerFrame)
+    {
+        animationTime -= timePerFrame;
+
+        // Move to the next frame
+        currentFrame.left += frameWidth;
+        if (currentFrame.left >= frameCount * frameWidth)
+        {
+            currentFrame.left = 0; // Loop back to the first frame
+        }
+
+        currentFrame = sf::IntRect(0, 0, frameWidth, frameHeight);
+        sprite.setTextureRect(currentFrame);
+    }
+}
+
 void Enemy::draw(sf::RenderWindow& window) const
 {
     window.draw(sprite);
