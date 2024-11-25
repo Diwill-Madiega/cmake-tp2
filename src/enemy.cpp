@@ -6,9 +6,6 @@
 Enemy::Enemy(std::shared_ptr<sf::Texture> sharedTexture, float spawnX, float spawnY)
     : texture(std::move(sharedTexture))  // Initialize the shared texture
 {
-    if (!texture || !texture->loadFromFile("../../assets/enemy.png")) {
-        std::cerr << "Error loading enemy texture\n";
-    }
     sprite.setTexture(*texture);
     sprite.setScale(2.f, 2.f);
     sprite.setPosition(spawnX, spawnY);  // Set initial position based on parameters

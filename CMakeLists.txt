@@ -21,6 +21,16 @@ add_executable(main src/main.cpp
         src/fireball.hpp
         src/fireball.cpp
         src/exp.hpp
+        src/hud.cpp
+        src/hud.hpp
+        src/hud.hpp
+        src/tilemap.hpp
+        src/tilemap.cpp
+        src/game.hpp
+        src/game.cpp
+        src/resourceManager.hpp
+        src/entityManager.hpp
+        src/explosion.hpp
 )
 target_link_libraries(main PRIVATE sfml-graphics)
 target_compile_features(main PRIVATE cxx_std_17)

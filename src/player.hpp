@@ -11,11 +11,18 @@ public:
     void draw(sf::RenderWindow& window);
     const sf::Vector2f& getPosition() const;
     const sf::FloatRect getBounds() const;
+    void increaseSpeed(float amount);
+    void reset();
+    bool shield = false;
+    bool invincible = false;
+    float blinkTimer = 0.0f;       // Tracks blinking intervals
+    bool isVisible = true;         // Tracks sprite visibility
 
 private:
     sf::Texture texture;
     sf::Sprite sprite;
-    float speed = 200.f;
+    float speed = 150.f;
+
 
     // Animation-related variables
     sf::IntRect currentFrame;
@@ -24,6 +31,7 @@ private:
     int frameCount = 2;       // Number of frames in your sprite sheet (horizontal)
     int frameWidth = 15;      // Width of a single frame
     int frameHeight = 21;     // Height of a single frame
+
 };
 
 #endif // PLAYER_HPP

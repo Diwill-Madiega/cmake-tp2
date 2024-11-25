@@ -4,12 +4,10 @@
 Player::Player(const std::string& textureFile)
 {
     if (!texture.loadFromFile(textureFile))
-    {
         std::cerr << "Error loading player texture\n";
-    }
+
     sprite.setTexture(texture);
 
-    // Initialize animation frame
     frameWidth = texture.getSize().x / frameCount; // Calculate frame width dynamically
     frameHeight = texture.getSize().y;            // Full height of the sprite
     currentFrame = sf::IntRect(0, 0, frameWidth, frameHeight);
@@ -26,34 +24,28 @@ void Player::update(float deltaTime)
     {
         animationTime -= timePerFrame;
 
-        // Move to the next frame
         currentFrame.left += frameWidth;
         if (currentFrame.left >= frameCount * frameWidth)
-        {
             currentFrame.left = 0; // Loop back to the first frame
-        }
 
         sprite.setTextureRect(currentFrame);
     }
 }
 
-
 void Player::handleInput(float deltaTime)
 {
     sf::Vector2f movement(0.f, 0.f);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
         movement.y -= speed * deltaTime;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         movement.y += speed * deltaTime;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
         movement.x -= speed * deltaTime;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         movement.x += speed * deltaTime;
 
     if (movement != sf::Vector2f(0.f, 0.f))
-    {
         update(deltaTime);
-    }
 
     sprite.move(movement);
 }
@@ -79,4 +71,14 @@ const sf::FloatRect Player::getBounds() const {
         reducedWidth,
         reducedHeight
     );
+}
+
+void Player::increaseSpeed(float amount) {
+    speed += amount;
+}
+
+void Player::reset()
+{
+    speed = 150.f;
+    sprite.setPosition(960.f, 540.f); // Initial position (center screen)
 }
