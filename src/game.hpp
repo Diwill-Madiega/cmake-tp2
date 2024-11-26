@@ -69,6 +69,11 @@ private:
         float lifetime;
     };
 
+    bool paused = false;
+    sf::RectangleShape pauseBackground;
+    sf::Text resumeText, quitText;
+    sf::RectangleShape resumeButton, quitButton;
+
     std::vector<Explosion> explosions;
     float explosionDuration = 0.1f; // Duration in seconds
 
@@ -77,9 +82,21 @@ private:
     sf::Text finalTimeText;
     sf::RectangleShape restartButton;
     float finalTime = -1;
-    sf::RectangleShape quitButton;
+    sf::RectangleShape pauseQuitButton;
     sf::Text restartText;
-    sf::Text quitText;
+    sf::Text pauseQuitText;
+
+    sf::Music mainTheme;
+    sf::SoundBuffer fireSoundBuffer;
+    sf::Sound fireSound;
+    sf::SoundBuffer hitSoundBuffer;
+    sf::Sound hitSound;
+    sf::SoundBuffer deathSoundBuffer;
+    sf::Sound deathSound;
+    sf::SoundBuffer expSoundBuffer;
+    sf::Sound expSound;
+    sf::SoundBuffer levelUpSoundBuffer;
+    sf::Sound levelUpSound;
 
     std::vector<Enemy> enemies;
     std::vector<Fireball> fireballs;

@@ -6,11 +6,12 @@
 #include <iostream>
 #include <stdexcept>
 #include <SFML/Audio.hpp>
-#include <chrono>
 #include <thread>
+#include <SFML/Graphics.hpp>
+#include <random>
 
 Game::Game()
-    : window({1920u, 1080u}, "Timeless Survivor"),
+    : window({1920u, 1080u}, "Timeless Survivor", sf::Style::Fullscreen),
       view(window.getDefaultView()),
       player("../../assets/player.png"),
       hud("../../assets/dogicapixel.ttf"),
@@ -21,6 +22,8 @@ Game::Game()
     window.setFramerateLimit(144);
     view.zoom(0.5f);
     window.setView(view);
+
+
 
     hud.loadFont(hudFont, "../../assets/dogicapixel.ttf");
     hud.configureText(levelUpText, hudFont, "LEVEL UP!", 48, sf::Color::White, {view.getCenter().x, view.getCenter().y - view.getSize().y / 2.f + 50.f});
@@ -33,6 +36,34 @@ Game::Game()
 
     // Set the icon of the window
     window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
+    // Load the main theme music
+    if (!mainTheme.openFromFile("../../assets/main_theme.mp3")) {
+        throw std::runtime_error("Error loading main theme music.");
+    }
+    mainTheme.setLoop(true);  // Enable looping
+    mainTheme.setVolume(50.f); // Set volume (0 to 100)
+    mainTheme.play(); // Start playing the music
+
+    // Pause menu background
+    pauseBackground.setSize(sf::Vector2f(window.getSize()));
+    pauseBackground.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
+
+    // Resume button
+    resumeButton.setSize({200.f, 50.f});
+    resumeButton.setFillColor(sf::Color::Green);
+    resumeButton.setOrigin(resumeButton.getSize().x / 2.f, resumeButton.getSize().y / 2.f);
+    resumeButton.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f - 50.f);
+
+    hud.configureText(resumeText, hudFont, "Resume", 24, sf::Color::White, resumeButton.getPosition());
+
+    //Pause Quit button
+    pauseQuitButton.setSize({200.f, 50.f});
+    pauseQuitButton.setFillColor(sf::Color::Red);
+    pauseQuitButton.setOrigin(pauseQuitButton.getSize().x / 2.f, pauseQuitButton.getSize().y / 2.f);
+    pauseQuitButton.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 50.f);
+
+    hud.configureText(pauseQuitText, hudFont, "Quit", 24, sf::Color::White, pauseQuitButton.getPosition());
 
     shieldTexture = loadTexture("../../assets/shield.png"); // Replace with your shield texture path
     shieldSprite.setTexture(*shieldTexture);
@@ -47,6 +78,31 @@ Game::Game()
     fireballTexture = loadTexture("../../assets/fireball.png");
     expTexture = loadTexture("../../assets/exp.png");
     explosionTexture = loadTexture("../../assets/explosion.png");
+
+    if (!fireSoundBuffer.loadFromFile("../../assets/fire.wav")) {
+        throw std::runtime_error("Failed to load fire.wav");
+    }
+    fireSound.setBuffer(fireSoundBuffer);
+
+    if (!hitSoundBuffer.loadFromFile("../../assets/hit.wav")) {
+        throw std::runtime_error("Failed to load hit.wav");
+    }
+    hitSound.setBuffer(hitSoundBuffer);
+
+    if (!deathSoundBuffer.loadFromFile("../../assets/death.wav")) {
+        throw std::runtime_error("Failed to load death.wav");
+    }
+    deathSound.setBuffer(deathSoundBuffer);
+
+    if (!expSoundBuffer.loadFromFile("../../assets/pickup.wav")) {
+        throw std::runtime_error("Failed to load pickup.wav");
+    }
+    expSound.setBuffer(expSoundBuffer);
+
+    if (!levelUpSoundBuffer.loadFromFile("../../assets/level_up.wav")) {
+        throw std::runtime_error("Failed to load level_up.wav");
+    }
+    levelUpSound.setBuffer(levelUpSoundBuffer);
 
 
     const std::string buttonTextureFiles[3] = {
@@ -169,6 +225,27 @@ void Game::handleEvents() {
             window.close();
         }
 
+        // Toggle pause
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+            paused = !paused;
+        }
+
+        if (paused) {
+            mainTheme.setVolume(15.f); // Set volume (0 to 100)
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                sf::Vector2f mousePos = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
+
+                if (resumeButton.getGlobalBounds().contains(mousePos)) {
+                    paused = false; // Resume game
+                } else if (pauseQuitButton.getGlobalBounds().contains(mousePos)) {
+                    window.close(); // Quit game
+                }
+            }
+            return; // Skip other event handling while paused
+        }
+        else
+            mainTheme.setVolume(50.f); // Set volume (0 to 100)
+
         if (gameOver) {
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
@@ -215,13 +292,15 @@ void Game::handleEvents() {
     }
 
     // Check if the left mouse button is held and the cooldown has elapsed
-    if (isLeftMouseButtonHeld && !isLevelUpPaused) {
+    if (isLeftMouseButtonHeld && !isLevelUpPaused && !gameOver) {
         spawnFireball();
     }
 }
 
 
 void Game::update(float deltaTime) {
+
+    if (paused || gameOver || isLevelUpPaused) return;
 
     for (auto it = explosions.begin(); it != explosions.end();) {
         it->lifetime -= deltaTime;
@@ -243,15 +322,6 @@ void Game::update(float deltaTime) {
         );
     }
 
-    if (gameOver) {
-        // Store the final time when game ends
-        if (finalTime == -1) {  // Ensures this is only done once
-            finalTime = gameClock.getElapsedTime().asSeconds();
-        }
-        return;  // Skip the game updates when the game is over
-    }
-
-    if (isLevelUpPaused) return; // Do not update the game
     player.handleInput(deltaTime);
 
     for (auto& enemy : enemies) {
@@ -267,6 +337,7 @@ void Game::update(float deltaTime) {
         if (player.getBounds().intersects(it->getBounds())) {
             it = expPoints.erase(it);
             playerExp++;
+            expSound.play();
         } else {
             ++it;
         }
@@ -295,9 +366,7 @@ void Game::render() {
         for (const auto& exp : expPoints) exp.draw(window);
         for (const auto& enemy : enemies) enemy.draw(window);
         player.draw(window);
-        if (player.shield) {
-            window.draw(shieldSprite);
-        }
+        if (player.shield) window.draw(shieldSprite);
         for (const auto& fireball : fireballs) fireball.draw(window);
 
         for (const auto& explosion : explosions) {
@@ -313,9 +382,17 @@ void Game::render() {
                 window.draw(buttonTexts[i]);
             }
         }
+
+        if (paused) {
+            window.draw(pauseBackground);
+            window.draw(resumeButton);
+            window.draw(pauseQuitButton);
+            window.draw(resumeText);
+            window.draw(pauseQuitText);
+        }
     } else {
         window.draw(gameOverText);
-
+        mainTheme.stop();
         std::ostringstream timeStream;
 
         if (finalTime >= 0) {  // Ensure it's a valid time
@@ -329,8 +406,6 @@ void Game::render() {
         window.draw(quitButton);
         window.draw(restartText);
         window.draw(quitText);
-
-
     }
     window.display();
 }
@@ -373,6 +448,7 @@ void Game::spawnFireball() {
             fireballSpawnPos.y += player.getBounds().height / 2.f;
 
             fireballs.emplace_back(fireballTexture, fireballSpawnPos, nearestEnemy->getPosition());
+            fireSound.play();
         }
     }
 }
@@ -406,7 +482,7 @@ void Game::handleCollisions() {
                 explosion.lifetime = explosionDuration;
                 explosion.sprite.setScale(2.f, 2.f); // Scale the explosion
                 explosions.push_back(explosion);
-
+                hitSound.play();
                 enemyIt = enemies.erase(enemyIt);
                 fireballIt = fireballs.erase(fireballIt);
                 fireballDestroyed = true;
@@ -425,6 +501,7 @@ void Game::handleCollisions() {
                 if (finalTime == -1) {  // Check if finalTime is not set yet
                     finalTime = gameClock.getElapsedTime().asSeconds();  // Save the final time
                 }
+                deathSound.play();
                 gameOver = true;
                 return;
             }
@@ -448,6 +525,7 @@ void Game::checkLevelUp() {
         level++;
         playerExp = 0;
         maxExp = 5 + level * 3; // Adjust 5 and 3 as per your desired growth rate
+        levelUpSound.play();
         isLevelUpPaused = true; // Pause the game
     }
     hud.update(playerExp, maxExp, level, gameClock.getElapsedTime().asSeconds());
@@ -458,13 +536,16 @@ void Game::restartGame() {
     fireballs.clear();
     expPoints.clear();
     player.reset();
+
     playerExp = 0;
     level = 1;
     maxExp = 5;
+    finalTime = -1;
     gameClock.restart();
     enemySpawnClock.restart();
     gameOver = false;
 
+    mainTheme.play();
 }
 
 void Game::IFrames() {
