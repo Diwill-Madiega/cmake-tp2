@@ -17,7 +17,7 @@ Game::Game()
       tilemap("../../assets/ground.png", window.getSize(), 2),
       level(1), playerExp(0), maxExp(5), gameOver(false),
       fireballCooldownTime(0.6f),
-      enemySpawnInterval(1.5f) {
+      enemySpawnInterval(1.f) {
     window.setFramerateLimit(144);
     view.zoom(0.5f);
     window.setView(view);
@@ -50,6 +50,14 @@ void Game::loadTextures() {
     buttonTextures[0] = loadTexture("../../assets/speed_button.png");
     buttonTextures[1] = loadTexture("../../assets/firerate_button.png");
     buttonTextures[2] = loadTexture("../../assets/defense_button.png");
+
+    moveTutorialTexture = loadTexture("../../assets/move_tutorial.png");
+    moveTutorialSprite.setTexture(*moveTutorialTexture);
+    moveTutorialSprite.setScale(2.f, 2.f);
+
+    shootTutorialTexture = loadTexture("../../assets/shoot_tutorial.png");
+    shootTutorialSprite.setTexture(*shootTutorialTexture);
+    shootTutorialSprite.setScale(2.f, 2.f);
 }
 
 void Game::loadSounds()
@@ -59,7 +67,6 @@ void Game::loadSounds()
     }
     mainTheme.setLoop(true);
     mainTheme.setVolume(50.f);
-    mainTheme.play();
 
     fireSoundBuffer.loadFromFile("../../assets/fire.wav");
     fireSound.setBuffer(fireSoundBuffer);
@@ -132,7 +139,9 @@ void Game::configurePauseMenu() {
 
 void Game::configureMainMenu() {
     mainMenuBackground.setSize(sf::Vector2f(window.getSize()));
-    mainMenuBackground.setFillColor(sf::Color(0, 0, 0, 200)); // Semi-transparent black
+    mainMenuBackground.setFillColor(sf::Color(0, 0, 0, 200));
+
+    hud.configureText(TitleText, hudFont, "Timeless Survivor", 36, sf::Color::White, {view.getCenter().x, view.getCenter().y - view.getSize().y / 2.f + 50.f});
 
     startButton.setSize({200.f, 50.f});
     startButton.setFillColor(sf::Color::Green);
@@ -145,6 +154,26 @@ void Game::configureMainMenu() {
     mainQuitButton.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 50.f);
 
     hud.configureText(startText, hudFont, "Start", 24, sf::Color::White, startButton.getPosition());
+    hud.configureText(mainQuitText, hudFont, "Quit", 24, sf::Color::White, mainQuitButton.getPosition());
+
+
+    moveTutorialSprite.setScale(3.f, 3.f);
+    shootTutorialSprite.setScale(3.f, 3.f);
+
+    sf::Vector2f viewSize = view.getSize();
+    sf::Vector2f viewCenter = view.getCenter();
+
+    float tutorialPadding = 150.f;
+
+    moveTutorialSprite.setPosition(
+        viewCenter.x - viewSize.x / 4.f,
+        viewCenter.y + viewSize.y / 2.f - tutorialPadding
+    );
+
+    shootTutorialSprite.setPosition(
+        viewCenter.x + viewSize.x / 6.f,
+        viewCenter.y + viewSize.y / 2.f - tutorialPadding
+    );
 }
 
 
@@ -183,19 +212,20 @@ void Game::handleEvents() {
             window.close();
         }
 
-        // If the game is in the main menu, handle menu button clicks
         if (inMainMenu) {
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
 
                 if (startButton.getGlobalBounds().contains(mousePos)) {
                     paused = false;
-                    inMainMenu = false;  // Exit the main menu and start the game
-                } else if (quitButton.getGlobalBounds().contains(mousePos)) {
-                    window.close();  // Quit the game
+                    inMainMenu = false;
+                    restartGame();
+                    mainTheme.play();
+                } else if (mainQuitButton.getGlobalBounds().contains(mousePos)) {
+                    window.close();
                 }
             }
-            return;  // Stop further event processing in the main menu
+            return;
         }
 
         if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
@@ -331,14 +361,16 @@ void Game::render() {
     window.clear();
 
     if (inMainMenu) {
-        // Render main menu
         window.draw(mainMenuBackground);
+        window.draw(TitleText);
         window.draw(startButton);
-        window.draw(quitButton);
-        window.draw(startText);
+        window.draw(mainQuitButton);
         window.draw(mainQuitText);
+        window.draw(startText);
+
+        window.draw(moveTutorialSprite);
+        window.draw(shootTutorialSprite);
     } else {
-        // Your normal game rendering code here
         tilemap.draw(window);
 
         if (!gameOver) {
@@ -480,6 +512,7 @@ void Game::handleCollisions() {
             if (player.shield) {
                 IFrames();
                 player.shield = false;
+                deathSound.play();
                 it = enemies.erase(it);
             }
         } else {

@@ -51,6 +51,13 @@ private:
     sf::Font hudFont;
     TileMap tilemap;
 
+    std::shared_ptr<sf::Texture> moveTutorialTexture;
+    sf::Sprite moveTutorialSprite;
+    std::shared_ptr<sf::Texture> shootTutorialTexture;
+    sf::Sprite shootTutorialSprite;
+
+    sf::Text TitleText;
+
     bool isLevelUpPaused = false;
     sf::RectangleShape levelUpButtons[3];
     sf::Text levelUpText;
@@ -63,7 +70,7 @@ private:
     sf::RectangleShape mainQuitButton;
     sf::Text startText;
     sf::Text mainQuitText;
-    bool inMainMenu = true;  // Flag to check if the game is in the main menu
+    bool inMainMenu = true;
 
     void restartGame();
 
