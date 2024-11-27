@@ -1,5 +1,6 @@
-// Exp.hpp
-#pragma once
+#ifndef EXP_HPP
+#define EXP_HPP
+
 #include <SFML/Graphics.hpp>
 
 class Exp {
@@ -22,3 +23,4 @@ private:
     sf::Sprite sprite;
 };
 
+#endif

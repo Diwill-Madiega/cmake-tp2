@@ -3,20 +3,20 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include <memory>
 #include "Player.hpp"
 #include "Enemy.hpp"
 #include "Fireball.hpp"
 #include "exp.hpp"
 #include "hud.hpp"
 #include "tilemap.hpp"
-#include "explosion.hpp"
 #include <SFML/Audio.hpp>
 
 class Game {
 public:
     Game();
+    void loadTextures();
     void run();
+    bool paused = true;
 
 private:
     void handleEvents();
@@ -28,34 +28,42 @@ private:
     void handleCollisions();
     void checkLevelUp();
 
-    // Helper functions
     void initializeLevelUpButtons();
+    void configureUI();
+    void configurePauseMenu();
+    void configureMainMenu();
     std::shared_ptr<sf::Texture> loadTexture(const std::string& filepath);
     void configureGameOverUI();
     void IFrames();
-    void playSound();
+    void loadSounds();
 
     sf::RenderWindow window;
     sf::View view;
 
     sf::Clock iframeClock;
-    const float invincibilityDuration = 1.0f; // 1 second of invincibility
+    const float invincibilityDuration = 1.0f;
 
     sf::Sprite shieldSprite;
     std::shared_ptr<sf::Texture> shieldTexture;
 
     Player player;
     HUD hud;
-    sf::Font hudFont; // Font for the level-up button and HUD
+    sf::Font hudFont;
     TileMap tilemap;
 
-    // Level-up handling
     bool isLevelUpPaused = false;
     sf::RectangleShape levelUpButtons[3];
     sf::Text levelUpText;
     sf::Text buttonTexts[3];
-    sf::Sprite levelUpButtonSprites[3];        // Sprites for buttons
-    std::shared_ptr<sf::Texture> buttonTextures[3]; // Textures for buttons
+    sf::Sprite levelUpButtonSprites[3];
+    std::shared_ptr<sf::Texture> buttonTextures[3];
+
+    sf::RectangleShape mainMenuBackground;
+    sf::RectangleShape startButton;
+    sf::RectangleShape mainQuitButton;
+    sf::Text startText;
+    sf::Text mainQuitText;
+    bool inMainMenu = true;  // Flag to check if the game is in the main menu
 
     void restartGame();
 
@@ -69,15 +77,14 @@ private:
         float lifetime;
     };
 
-    bool paused = false;
+
     sf::RectangleShape pauseBackground;
     sf::Text resumeText, quitText;
     sf::RectangleShape resumeButton, quitButton;
 
     std::vector<Explosion> explosions;
-    float explosionDuration = 0.1f; // Duration in seconds
+    float explosionDuration = 0.15f;
 
-    // Game Over Text and Buttons
     sf::Text gameOverText;
     sf::Text finalTimeText;
     sf::RectangleShape restartButton;
@@ -112,9 +119,9 @@ private:
     int maxExp;
     bool gameOver;
 
-    bool isLeftMouseButtonHeld = false; // Tracks if the left mouse button is held
+    bool isLeftMouseButtonHeld = false;
     float fireballCooldownTime;
     float enemySpawnInterval;
 };
 
-#endif // GAME_HPP
+#endif

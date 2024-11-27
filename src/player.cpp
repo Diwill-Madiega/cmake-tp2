@@ -1,20 +1,17 @@
 #include "Player.hpp"
-#include <iostream>
 
 Player::Player(const std::string& textureFile)
 {
-    if (!texture.loadFromFile(textureFile))
-        std::cerr << "Error loading player texture\n";
-
+    texture.loadFromFile(textureFile);
     sprite.setTexture(texture);
 
-    frameWidth = texture.getSize().x / frameCount; // Calculate frame width dynamically
-    frameHeight = texture.getSize().y;            // Full height of the sprite
+    frameWidth = texture.getSize().x / frameCount;
+    frameHeight = texture.getSize().y;
     currentFrame = sf::IntRect(0, 0, frameWidth, frameHeight);
     sprite.setTextureRect(currentFrame);
 
     sprite.setScale(2.f, 2.f);
-    sprite.setPosition(960.f, 540.f); // Initial position (center screen)
+    sprite.setPosition(960.f, 540.f);
 }
 
 void Player::update(float deltaTime)
@@ -26,7 +23,7 @@ void Player::update(float deltaTime)
 
         currentFrame.left += frameWidth;
         if (currentFrame.left >= frameCount * frameWidth)
-            currentFrame.left = 0; // Loop back to the first frame
+            currentFrame.left = 0;
 
         sprite.setTextureRect(currentFrame);
     }
@@ -62,7 +59,7 @@ const sf::Vector2f& Player::getPosition() const
 
 const sf::FloatRect Player::getBounds() const {
     sf::FloatRect bounds = sprite.getGlobalBounds();
-    float shrinkFactor = 0.7f; // Adjust to your desired size
+    float shrinkFactor = 0.7f;
     float reducedWidth = bounds.width * (1.0f - shrinkFactor);
     float reducedHeight = bounds.height * (1.0f - shrinkFactor);
     return sf::FloatRect(
@@ -80,5 +77,5 @@ void Player::increaseSpeed(float amount) {
 void Player::reset()
 {
     speed = 150.f;
-    sprite.setPosition(960.f, 540.f); // Initial position (center screen)
+    sprite.setPosition(960.f, 540.f);
 }

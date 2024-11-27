@@ -1,7 +1,7 @@
-// Fireball.hpp
-#pragma once
+#ifndef FIREBALL_HPP
+#define FIREBALL_HPP
+
 #include <SFML/Graphics.hpp>
-#include <memory>
 
 class Fireball {
 public:
@@ -13,8 +13,10 @@ public:
     bool isOffScreen(const sf::RenderWindow& window) const;
 
 private:
-    std::shared_ptr<sf::Texture> texture;  // Shared pointer for texture
+    std::shared_ptr<sf::Texture> texture;
     sf::Sprite sprite;
     sf::Vector2f direction;
-    float speed = 500.0f;  // Speed of the fireball
+    float speed = 500.0f;
 };
+
+#endif

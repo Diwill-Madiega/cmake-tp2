@@ -1,24 +1,17 @@
-#include "TileMap.hpp"
-#include <iostream>
+#include "Tilemap.hpp"
 
 TileMap::TileMap(const std::string& texturePath, sf::Vector2u windowSize, unsigned int scaleFactor)
     : scaleFactor_(scaleFactor) {
-    if (!tileTexture_.loadFromFile(texturePath)) {
-        std::cerr << "Error loading tile texture from " << texturePath << "\n";
-        return;
-    }
+    tileTexture_.loadFromFile(texturePath);
 
-    tileTexture_.setRepeated(true); // Allow the texture to repeat
+    tileTexture_.setRepeated(true);
     sf::Vector2u tileSize = tileTexture_.getSize() * scaleFactor_;
 
-    // Create a vertex array for the tilemap
     tilemap_.setPrimitiveType(sf::Quads);
 
-    // Calculate the number of tiles needed
     int tilesX = windowSize.x / tileSize.x + 1;
     int tilesY = windowSize.y / tileSize.y + 1;
 
-    // Fill the vertex array
     for (int y = 0; y < tilesY; ++y) {
         for (int x = 0; x < tilesX; ++x) {
             sf::Vertex topLeft(sf::Vector2f(x * tileSize.x, y * tileSize.y), sf::Vector2f(0, 0));

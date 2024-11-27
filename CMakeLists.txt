@@ -28,8 +28,6 @@ add_executable(main src/main.cpp
         src/tilemap.cpp
         src/game.hpp
         src/game.cpp
-        src/resourceManager.hpp
-        src/entityManager.hpp
         src/explosion.hpp
 )
 target_link_libraries(main PRIVATE sfml-graphics sfml-audio)

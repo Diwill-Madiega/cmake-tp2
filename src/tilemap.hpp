@@ -15,4 +15,4 @@ private:
     unsigned int scaleFactor_;
 };
 
-#endif // TILEMAP_HPP
+#endif

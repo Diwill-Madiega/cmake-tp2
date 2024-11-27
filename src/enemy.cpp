@@ -1,14 +1,12 @@
-// Enemy.cpp
 #include "Enemy.hpp"
 #include <cmath>
-#include <iostream>
 
 Enemy::Enemy(std::shared_ptr<sf::Texture> sharedTexture, float spawnX, float spawnY)
-    : texture(std::move(sharedTexture))  // Initialize the shared texture
+    : texture(std::move(sharedTexture))
 {
     sprite.setTexture(*texture);
     sprite.setScale(2.f, 2.f);
-    sprite.setPosition(spawnX, spawnY);  // Set initial position based on parameters
+    sprite.setPosition(spawnX, spawnY);
 }
 
 void Enemy::follow(const sf::Vector2f& targetPosition, float deltaTime)
@@ -18,7 +16,7 @@ void Enemy::follow(const sf::Vector2f& targetPosition, float deltaTime)
 
     if (distance > 1.f)
     {
-        direction /= distance;  // Normalize
+        direction /= distance;
         sprite.move(direction * speed * deltaTime);
     }
 }
@@ -30,13 +28,11 @@ void Enemy::update(float deltaTime)
     {
         animationTime -= timePerFrame;
 
-        // Move to the next frame
         currentFrame.left += frameWidth;
         if (currentFrame.left >= frameCount * frameWidth)
         {
-            currentFrame.left = 0; // Loop back to the first frame
+            currentFrame.left = 0;
         }
-
         currentFrame = sf::IntRect(0, 0, frameWidth, frameHeight);
         sprite.setTextureRect(currentFrame);
     }

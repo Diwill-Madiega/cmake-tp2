@@ -2,7 +2,6 @@
 #define ENEMY_HPP
 
 #include <SFML/Graphics.hpp>
-#include <string>
 
 class Enemy {
 public:
@@ -15,17 +14,16 @@ public:
     const sf::Vector2f& getPosition() const;
 
 private:
-    std::shared_ptr<sf::Texture> texture;  // Shared pointer for texture
+    std::shared_ptr<sf::Texture> texture;
     sf::Sprite sprite;
-    float speed = 100.0f;  // Movement speed
+    float speed = 100.0f;
 
-    // Animation-related variables
     sf::IntRect currentFrame;
     float animationTime = 0.f;
-    float timePerFrame = 0.3f; // Adjust as needed
-    int frameCount = 2;       // Number of frames in your sprite sheet (horizontal)
-    int frameWidth = 12;      // Width of a single frame
-    int frameHeight = 10;     // Height of a single frame
+    float timePerFrame = 0.3f;
+    int frameCount = 2;
+    int frameWidth = 12;
+    int frameHeight = 10;
 };
 
 #endif
